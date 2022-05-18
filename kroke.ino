@@ -12,7 +12,6 @@ const float G = 9.81;
 #define SS_PIN PB12
 int status;
 
-
 void setup() {
   // serial to display data
   Serial.begin(9600);
@@ -37,22 +36,21 @@ void loop() {
   if (IMU.magneticFieldAvailable()){
     IMU.readMagneticField(mx,my,mz);
   }
-  
-  
-  deltat = fusion.deltatUpdate();
-  //fusion.MahonyUpdate(gx*DEG_TO_RAD, gy*DEG_TO_RAD, gz*DEG_TO_RAD, ax*G, ay*G, az*G, deltat);  //mahony is suggested if there isn't the mag
-  fusion.MadgwickUpdate(gx*DEG_TO_RAD, gy*DEG_TO_RAD, gz*DEG_TO_RAD, ax*G, ay*G, az*G, mx, my, mz, deltat);  //else use the magwick
 
+  deltat = fusion.deltatUpdate();
+  
+  fusion.MahonyUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G, deltat);
+  //fusion.MadgwickUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G, mx, my, mz, deltat); //Mag axis still unsure
+  
   roll = fusion.getRoll();
   pitch = fusion.getPitch();
   yaw = fusion.getYaw();
-  
 
-  Serial.print(roll);
-  Serial.print('\t');
-  Serial.print(pitch);
-  Serial.print('\t');
-  Serial.println(yaw);
+  //For Serial plotter
+  Serial.print("roll:"); Serial.print(roll); Serial.print(", ");
+  Serial.print("pitch:"); Serial.print(pitch); Serial.print(", ");
+  Serial.print("yaw:"); Serial.print(yaw); Serial.print(", ");
+  Serial.println();
 
   delay(10); //for readability
 
