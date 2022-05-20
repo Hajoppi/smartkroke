@@ -1,16 +1,30 @@
 #include <Arduino_LSM9DS1.h>
+#include <BasicLinearAlgebra.h>
 #include "SensorFusion.h"
 #include "Arduino.h"
 
+using namespace BLA;
+
 SF fusion;
+#define SS_PIN PB12
 
 float gx, gy, gz, ax, ay, az, mx, my, mz, temp;
+
+
+float T[] = {0,0};
+BLA::Matrix<5,3> ledMatrix = {
+  0,1,1,
+  0,2,1,
+  0,3,1,
+  0,4,1,
+  0,5,1
+};
+
 float pitch, roll, yaw;
 float deltat;
-const float G = 9.81;
-
-#define SS_PIN PB12
 int status;
+const float G = 9.81;
+const float lengthOffset = 0;
 
 void setup() {
   // serial to display data
@@ -24,34 +38,29 @@ void setup() {
   }
 }
 
-void loop() {
-
-  if (IMU.accelerationAvailable()) {
-      IMU.readAcceleration(ax, ay, az);
-    }
-  
-  if (IMU.gyroscopeAvailable()) {
-      IMU.readGyroscope(gx, gy, gz);
-    }
-  if (IMU.magneticFieldAvailable()){
-    IMU.readMagneticField(mx,my,mz);
-  }
-
+float getRoll() {
+  IMU.readAcceleration(ax, ay, az);
+  IMU.readGyroscope(gx, gy, gz);
   deltat = fusion.deltatUpdate();
-  
-  fusion.MahonyUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G, deltat);
-  //fusion.MadgwickUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G, mx, my, mz, deltat); //Mag axis still unsure
-  
-  roll = fusion.getRoll();
-  pitch = fusion.getPitch();
-  yaw = fusion.getYaw();
+  // fusion.MahonyUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G, deltat);
+  fusion.MadgwickUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G, mx, my, mz, deltat); //Mag axis still unsure
+  roll = fusion.getRollRadians();
+  return roll;
+}
 
-  //For Serial plotter
-  Serial.print("roll:"); Serial.print(roll); Serial.print(", ");
-  Serial.print("pitch:"); Serial.print(pitch); Serial.print(", ");
-  Serial.print("yaw:"); Serial.print(yaw); Serial.print(", ");
-  Serial.println();
-
-  delay(10); //for readability
+void loop() {
+  float roll;
+  if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()) {
+      roll = -getRoll();
+  }
+  BLA::Matrix<3,3> transformationMatrix = {
+    cos(roll),-sin(roll),T[0],
+    sin(roll),cos(roll),T[1],
+    0,0,1
+  };
+  BLA::Matrix<5,3> newMatrix = ledMatrix * transformationMatrix;
+  Serial << newMatrix << '\n';
+  //Serial << roll << '\n';
+  //delay(10); //for readability
 
 }
