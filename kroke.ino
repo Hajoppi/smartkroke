@@ -42,8 +42,8 @@ float getRoll() {
   IMU.readAcceleration(ax, ay, az);
   IMU.readGyroscope(gx, gy, gz);
   deltat = fusion.deltatUpdate();
-  // fusion.MahonyUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G, deltat);
-  fusion.MadgwickUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G, mx, my, mz, deltat); //Mag axis still unsure
+  fusion.MahonyUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G, deltat);
+  //fusion.MadgwickUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G deltat); //Mag axis still unsure
   roll = fusion.getRollRadians();
   return roll;
 }
@@ -51,15 +51,15 @@ float getRoll() {
 void loop() {
   float roll;
   if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable()) {
-      roll = -getRoll();
+      roll = getRoll();
   }
   BLA::Matrix<3,3> transformationMatrix = {
     cos(roll),-sin(roll),T[0],
     sin(roll),cos(roll),T[1],
     0,0,1
   };
-  BLA::Matrix<5,3> newMatrix = ledMatrix * transformationMatrix;
-  Serial << newMatrix << '\n';
+  BLA::Matrix<5,3> newMatrix = ~(transformationMatrix * ~ledMatrix);
+  Serial << newMatrix(0,0) << " " << newMatrix(0,1) << '\n';
   //Serial << roll << '\n';
   //delay(10); //for readability
 
