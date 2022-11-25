@@ -12,7 +12,7 @@ float gx, gy, gz, ax, ay, az, mx, my, mz, temp;
 
 
 float T[] = {0,0};
-BLA::Matrix<5,3> ledMatrix = {
+BLA::Matrix<5,3> ledMatrix = { //shape x,y,z where z is homogenous coordinates
   0,1,1,
   0,2,1,
   0,3,1,
@@ -43,7 +43,7 @@ float getRoll() {
   IMU.readGyroscope(gx, gy, gz);
   deltat = fusion.deltatUpdate();
   fusion.MahonyUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G, deltat);
-  //fusion.MadgwickUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G deltat); //Mag axis still unsure
+  //fusion.MadgwickUpdate(-gy*DEG_TO_RAD, gz*DEG_TO_RAD, gx*DEG_TO_RAD,-ay*G,  az*G, ax*G deltat);
   roll = fusion.getRollRadians();
   return roll;
 }
@@ -59,8 +59,9 @@ void loop() {
     0,0,1
   };
   BLA::Matrix<5,3> newMatrix = ~(transformationMatrix * ~ledMatrix);
-  Serial << newMatrix(0,0) << " " << newMatrix(0,1) << '\n';
-  //Serial << roll << '\n';
-  //delay(10); //for readability
+  //Serial << newMatrix(0,0) << " " << newMatrix(0,1) << '\n';
+  temp = roll*RAD_TO_DEG;
+  Serial << temp<< '\n';
+  delay(10); //for readability
 
 }
