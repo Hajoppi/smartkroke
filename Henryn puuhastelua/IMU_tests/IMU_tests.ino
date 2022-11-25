@@ -13,7 +13,7 @@ SF fusion;
 float gx, gy, gz, ax, ay, az, temp;
 
 
-float T[] = {10,10};
+float T[] = {0,0};
 BLA::Matrix<3,NUM_LEDS> ledMatrix;
 BLA::Matrix<1,3> filterX = {1,0,0}; //to show only X coordinate
 BLA::Matrix<1,3> filterY = {0,1,0}; //to show only Y coordinate
@@ -72,11 +72,7 @@ void loop() {
     sin(roll),cos(roll),T[1],
     0,0,1};
     BLA::Matrix<3,NUM_LEDS> newMatrix = transformationMatrix * ledMatrix;
-    
-    
-   
     Serial << filterX*newMatrix << '\n';
-
     }
 
     
