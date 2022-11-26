@@ -132,7 +132,7 @@ void loop() {
   };
   BLA::Matrix<60,3> newMatrix = ~(transformationMatrix * ~ledMatrix);
   for(uint16_t i=0; i<strip.numPixels(); i++) {
-    int x = (int)newMatrix(i,0)+30;
+    int x = -(int)newMatrix(i,0)+30;
     int y = (int)newMatrix(i,1);
     int index = -y + x*60;
     int d = 0;
